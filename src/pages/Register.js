@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 
 function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [birthDate, setBirthDate] = useState("");
     const [error, setError] = useState("");
     const [emailInUse, setEmailInUse] = useState(false);
 
@@ -21,9 +25,27 @@ function Register() {
             return;
         }
 
+        if (!fullName || !phoneNumber || !birthDate) {
+            setError("Por favor, preencha todos os campos.");
+            return;
+        }
+
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            navigate("/home", { state: { from: "register" } }); 
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await updateProfile(user, {
+                displayName: fullName,
+            });
+
+            await setDoc(doc(db, "users", user.uid), {
+                email: email,
+                fullName: fullName,
+                phoneNumber: phoneNumber,
+                birthDate: birthDate,
+            });
+
+            navigate("/home", { state: { from: "register" } });
         } catch (err) {
             if (err.code === "auth/email-already-in-use") {
                 setEmailInUse(true);
@@ -72,6 +94,39 @@ function Register() {
                         />
                     </div>
 
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Nome Completo</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 mt-1 border rounded-md"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Número de Celular</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 mt-1 border rounded-md"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-gray-700">Data de Nascimento</label>
+                        <input
+                            type="date"
+                            className="w-full px-4 py-2 mt-1 border rounded-md"
+                            value={birthDate}
+                            onChange={(e) => setBirthDate(e.target.value)}
+                            required
+                        />
+                    </div>
+
                     {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
                     <button
@@ -81,15 +136,15 @@ function Register() {
                         Criar Conta
                     </button>
                 </form>
+
                 {emailInUse && (
                     <p className="text-sm mt-2 text-center">
-                        Este e-mail ja esta em uso.{" "}
+                        Este e-mail já está em uso.{" "}
                         <a href="/" className="text-blue-500 hover:underline">
                             Faça login aqui
                         </a>.
                     </p>
                 )}
-
             </div>
         </div>
     );
