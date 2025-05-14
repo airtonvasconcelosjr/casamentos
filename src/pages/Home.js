@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -13,7 +13,7 @@ function Home() {
                 } else if (location.state.from === "register") {
                     toast.success("Conta criada com sucesso! Seja bem-vindo(a)!");
                 } else if (location.state.from === "home") {
-                    toast.success("Usario deslogado com sucesso!");
+                    toast.success("Usuário deslogado com sucesso!");
                 }
                 window.history.replaceState({}, document.title);
             }, 100);
