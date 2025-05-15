@@ -42,4 +42,12 @@ export function parseDateFromBRFormat(brDate) {
   return `${year}-${month}-${day}`;
 }
 
+export function formatCurrencyBR(value) {
+  if (value == null) return "—";
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  }).format(value);
+}
+
 
