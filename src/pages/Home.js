@@ -5,13 +5,11 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Card from "../components/Card";
-import { useNavigate } from "react-router-dom";
 
 function Home() {
-    const navigate = useNavigate();
     const location = useLocation();
     const [role, setRole] = useState(null);
-    const [name, setName] = useState("");
+    const [fullName, setFullName] = useState("");
 
     useEffect(() => {
         if (location.state?.from) {
@@ -38,7 +36,7 @@ function Home() {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     setRole(data.role);
-                    setName(data.name || user.displayName || "");
+                    setFullName(data.fullName || user.displayName || "");
                 }
             }
         });
@@ -46,17 +44,13 @@ function Home() {
         return () => unsubscribe();
     }, []);
 
-      const listUsers = () => {
-            navigate("/users", { state: { from: "home" } });
-        };
-
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-green-50 p-6">
             <div className="md:w-1/2 flex flex-col justify-center items-center text-center p-6">
-                {role === "client" && (
+                {role !== "admin" && (
                     <>
                         <h1 className="text-3xl font-bold text-olive-dark mb-4">
-                            Olá, <span className="font-calligraphy text-6xl">{name}</span>
+                            Olá, <span className="font-calligraphy text-6xl">{fullName}</span>
                         </h1>
                         <p className="text-lg text-gray-700 leading-relaxed">
                             Que alegria ter você aqui! Este é o seu espaço exclusivo para acompanhar cada detalhe da organização
@@ -71,7 +65,7 @@ function Home() {
 
                 {role === "admin" && (
                     <h1 className="text-3xl font-bold text-olive-dark mb-4">
-                        Olá {name}, seja bem-vindo novamente!
+                        Olá {fullName}, seja bem-vindo novamente!
                     </h1>
                 )}
             </div>
@@ -82,11 +76,13 @@ function Home() {
                         <Link to="/users">
                             <Card title="Usuários" description="Gerencie os usuários cadastrados." />
                         </Link>
-                        <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
+                        <Link to="/orcamentos">
+                            <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
+                        </Link>
                     </>
                 )}
 
-                {role === "client" && (
+                {role !== "admin" && (
                     <Card title="Orçamentos" description="Veja seus orçamentos disponíveis." />
                 )}
             </div>

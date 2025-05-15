@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
 function Register() {
@@ -43,7 +43,8 @@ function Register() {
                 fullName: fullName,
                 phoneNumber: phoneNumber,
                 birthDate: birthDate,
-                role: "client",
+                role: "user",
+                createdAt: serverTimestamp(),
             });
 
             navigate("/home", { state: { from: "register" } });

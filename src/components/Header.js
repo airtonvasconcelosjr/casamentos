@@ -22,7 +22,7 @@ function Header() {
     const navigate = useNavigate();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [displayName, setDisplayName] = useState("");
+    const [fullName, setFullName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [birthDate, setBirthDate] = useState("");
     const [newEmail, setNewEmail] = useState("");
@@ -33,6 +33,7 @@ function Header() {
     useEffect(() => {
         const fetchUserData = async () => {
             if (user) {
+                console.log(fullName)
                 const userRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userRef);
 
@@ -40,9 +41,9 @@ function Header() {
                     const userData = userDoc.data();
                     setPhoneNumber(userData.phoneNumber || "");
                     setBirthDate(userData.birthDate || "");
+                    setFullName(userData.fullName || user.displayName || "");
+                    setNewEmail(user.email || "");
                 }
-                setDisplayName(user.displayName || "");
-                setNewEmail(user.email || "");
             }
         };
 
@@ -55,7 +56,7 @@ function Header() {
     };
 
     const handleEditClick = () => {
-        setDisplayName(user?.displayName || "");
+        setFullName(user?.fullName || "");
         setNewEmail(user?.email || "");
         setIsModalOpen(true);
     };
@@ -113,11 +114,11 @@ function Header() {
                 }
             }
 
-            await updateProfile(user, { displayName });
+            await updateProfile(user, { fullName });
 
             const userRef = doc(db, "users", user.uid);
             await setDoc(userRef, {
-                displayName,
+                fullName,
                 phoneNumber,
                 birthDate,
                 email: user.email,
@@ -166,7 +167,7 @@ function Header() {
                 <h1 className="text-2xl font-bold">Casar em Carneiros</h1>
                 {user && (
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm">{user.displayName}</span>
+                        <span className="text-sm">{fullName}</span>
                         <FontAwesomeIcon
                             icon={faPencil}
                             className="white mr-6 w-3 cursor-pointer"
@@ -202,8 +203,8 @@ function Header() {
                     <InputField
                         label="Nome"
                         type="text"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
                         disabled={isUpdatingEmail || isCheckingEmail}
                     />
 
