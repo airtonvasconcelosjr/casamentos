@@ -15,3 +15,6 @@ In the project directory, you can run:
 ![Screenshot from 2025-05-14 14-44-34](https://github.com/user-attachments/assets/ca97f571-f4e6-425a-bf85-c512ba04f0f6)
 
 ![image](https://github.com/user-attachments/assets/ab119c08-1ec7-4b83-8ecc-7f29fccb3cf0)
+
+![image](https://github.com/user-attachments/assets/dff2bdc5-4353-459c-8c5e-54d744207270)
+
