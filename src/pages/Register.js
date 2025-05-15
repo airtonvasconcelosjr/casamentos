@@ -43,6 +43,7 @@ function Register() {
                 fullName: fullName,
                 phoneNumber: phoneNumber,
                 birthDate: birthDate,
+                role: "client",
             });
 
             navigate("/home", { state: { from: "register" } });
