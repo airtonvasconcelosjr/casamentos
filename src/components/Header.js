@@ -35,6 +35,7 @@ function Header() {
             if (user) {
                 const userRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userRef);
+
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     setPhoneNumber(userData.phoneNumber || "");

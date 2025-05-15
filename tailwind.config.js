@@ -11,6 +11,9 @@ module.exports = {
                 'olive-dark': '#6f7a58',
                 'olive-light': '#c9d1b2',
             },
+            fontFamily: {
+                calligraphy: ['"Great Vibes"', 'cursive'],
+            },
         },
     },
     plugins: [],
