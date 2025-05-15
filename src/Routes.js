@@ -7,6 +7,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import AuthLayout from "./layouts/AuthLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import Users from "./pages/UsersList";
+import Orcamentos from "./pages/OrcamentosList";
 
 function AppRoutes() {
   return (
@@ -32,6 +33,14 @@ function AppRoutes() {
             element={
               <PrivateRoute requiredRole="admin">
                 <Users />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/orcamentos"
+            element={
+              <PrivateRoute>
+                <Orcamentos />
               </PrivateRoute>
             }
           />
