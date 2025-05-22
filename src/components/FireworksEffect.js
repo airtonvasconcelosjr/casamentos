@@ -27,7 +27,8 @@ function FireworksEffect({ className = "" }) {
   return (
     <div
       ref={containerRef}
-      className={`absolute top-[-600px] left-0 w-full h-1/2 z-0 pointer-events-none select-none ${className}`}
+      className={`absolute top-0 left-0 w-full h-1/3 z-0 pointer-events-none select-none ${className}`}
+
     />
   )
 }
