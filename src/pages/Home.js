@@ -5,6 +5,8 @@ import { auth, db } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import Card from "../components/Card";
+import backgroundImage from "../assets/casamento-na-praia.jpg";
+import FireworksEffect from "../components/FireworksEffect";
 
 function Home() {
     const location = useLocation();
@@ -46,6 +48,7 @@ function Home() {
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-green-50 p-6">
+            {/* Parte esquerda */}
             <div className="md:w-1/2 flex flex-col justify-center items-center text-center p-6">
                 {role !== "admin" && (
                     <>
@@ -70,21 +73,37 @@ function Home() {
                 )}
             </div>
 
-            <div className="md:w-1/2 flex flex-col justify-center items-center gap-6 p-6">
-                {role === "admin" && (
-                    <>
-                        <Link to="/users">
-                            <Card title="Usuários" description="Gerencie os usuários cadastrados." />
-                        </Link>
-                        <Link to="/orcamentos">
-                            <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
-                        </Link>
-                    </>
-                )}
+            {/* Parte direita */}
+            <div className="md:w-1/2 relative p-6 flex flex-col justify-center items-center gap-6 overflow-hidden rounded-lg shadow-lg">
+                {/* Imagem de fundo */}
+                <img
+                    src={backgroundImage}
+                    alt="Fundo decorativo"
+                    className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none"
+                />
+              
 
-                {role !== "admin" && (
-                    <Card title="Orçamentos" description="Veja seus orçamentos disponíveis." />
-                )}
+
+                {/* Conteúdo (cards) fica sobre a imagem */}
+                <div className="relative w-full z-30 flex flex-col justify-center items-center gap-6">
+                    {role === "admin" && (
+                        <>
+                            <Link to="/users" className="w-full max-w-md">
+                                <Card title="Usuários" description="Gerencie os usuários cadastrados." />
+                            </Link>
+                            <Link to="/orcamentos" className="w-full max-w-md">
+                                <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
+                            </Link>
+                        </>
+                    )}
+
+                    {role !== "admin" && (
+                        <div className="w-full max-w-md">
+                            <Card title="Orçamentos" description="Veja seus orçamentos disponíveis." />
+                        </div>
+                    )}
+                </div>
+                <FireworksEffect  className="opacity-40" />
             </div>
         </div>
     );

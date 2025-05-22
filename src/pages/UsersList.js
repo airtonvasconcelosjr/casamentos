@@ -13,7 +13,6 @@ import { toast } from "react-toastify";
 import CreateUserModal from "../components/CreateUserModal";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
 
-
 function UsersList() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -57,31 +56,21 @@ function UsersList() {
 
     const handleDeleteConfirm = async (user) => {
         try {
-            // 1. Primeiro excluímos o documento do Firestore
             await deleteDoc(doc(db, "users", user.id));
-            
-            // 2. Tentamos excluir o usuário da autenticação
-            // Para isso, precisamos de acesso administrativo ou estar autenticado como o usuário
-            // Aqui vamos usar uma função que pode ser implementada no Firebase Functions
+
             try {
-                // Esta é uma abordagem simplificada que funciona apenas para administradores
-                // Em um ambiente de produção, você deve usar Firebase Functions
                 const adminAuth = getAuth();
                 const userToDelete = adminAuth.currentUser;
-                
+
                 if (userToDelete && userToDelete.uid === user.id) {
                     await deleteUser(userToDelete);
                 } else {
                     console.log("Não foi possível excluir o usuário do Auth diretamente. Um Cloud Function seria necessário.");
-                    // Aqui você poderia chamar uma Cloud Function que faria essa exclusão
                 }
             } catch (authError) {
                 console.error("Erro ao excluir usuário da autenticação:", authError);
-                // Continuamos mesmo se houver erro na exclusão da autenticação
-                // para não interromper a experiência do usuário
             }
-            
-            // 3. Atualizamos o estado da interface
+
             setUsers(prev => prev.filter(u => u.id !== user.id));
             setIsDeleteOpen(false);
             console.log("Usuário excluído com sucesso:", user.fullName);
