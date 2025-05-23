@@ -1,12 +1,27 @@
 export function formatPhoneNumber(phone) {
-  if (!phone) return "—";
-  const cleaned = ('' + phone).replace(/\D/g, '');
-  const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
-  if (match) {
-    return `(${match[1]}) ${match[2]}-${match[3]}`;
-  }
-  return phone;
+    if (!phone) return "";
+    const digits = phone.replace(/\D/g, "");
+
+    if (digits.length <= 2) {
+        return `(${digits}`;
+    }
+
+    if (digits.length <= 6) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    }
+
+    if (digits.length <= 10) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    }
+
+    if (digits.length <= 11) {
+        return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+    }
+
+    // Caso exceda 11 dígitos, corta o excesso
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 }
+
 
 export function formatDateBR(dateInput) {
   if (!dateInput) return "";

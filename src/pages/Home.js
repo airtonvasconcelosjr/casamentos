@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { auth, db } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { useUser } from "../contexts/UserContext";
 import Card from "../components/Card";
 import backgroundImage from "../assets/casamento-na-praia.jpg";
 import FireworksEffect from "../components/FireworksEffect";
 
 function Home() {
     const location = useLocation();
-    const [role, setRole] = useState(null);
-    const [fullName, setFullName] = useState("");
+    const { userData, loading } = useUser();
+    const { fullName, role } = userData;
 
     useEffect(() => {
         if (location.state?.from) {
@@ -30,21 +28,16 @@ function Home() {
         }
     }, [location]);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setRole(data.role);
-                    setFullName(data.fullName || user.displayName || "");
-                }
-            }
-        });
-
-        return () => unsubscribe();
-    }, []);
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-green-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive-dark mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Carregando...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-green-50 p-6">
@@ -81,8 +74,6 @@ function Home() {
                     alt="Fundo decorativo"
                     className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none select-none"
                 />
-              
-
 
                 {/* Conteúdo (cards) fica sobre a imagem */}
                 <div className="relative w-full z-30 flex flex-col justify-center items-center gap-6">
@@ -103,7 +94,7 @@ function Home() {
                         </div>
                     )}
                 </div>
-                <FireworksEffect  className="opacity-40" />
+                <FireworksEffect className="opacity-40" />
             </div>
         </div>
     );
