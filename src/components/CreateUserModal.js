@@ -115,7 +115,7 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
                             >
                                 <option value="client">Cliente</option>
                                 {/* <option value="admin">Administrador</option> */}
-                                <option value="staff">Funcionário</option>
+                                <option value="user">Usuário</option>
                             </select>
                         </div>
                     )}

@@ -3,7 +3,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import {
     updateProfile,
     EmailAuthProvider,
@@ -14,12 +14,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import InputField from "../components/InputField";
+import { formatInputDateMask, formatPhoneNumber } from "../utils/formatters";
+import { useUser } from "../contexts/UserContext";
 
 Modal.setAppElement("#root");
 
 function Header() {
     const [user] = useAuthState(auth);
     const navigate = useNavigate();
+    const { userData, updateUserData } = useUser();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [fullName, setFullName] = useState("");
@@ -31,24 +34,13 @@ function Header() {
     const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            if (user) {
-                console.log(fullName)
-                const userRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userRef);
-
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    setPhoneNumber(userData.phoneNumber || "");
-                    setBirthDate(userData.birthDate || "");
-                    setFullName(userData.fullName || user.displayName || "");
-                    setNewEmail(user.email || "");
-                }
-            }
-        };
-
-        fetchUserData();
-    }, [user]);
+        if (isModalOpen) {
+            setFullName(userData.fullName || "");
+            setPhoneNumber(userData.phoneNumber || "");
+            setBirthDate(userData.birthDate || "");
+            setNewEmail(userData.email || "");
+        }
+    }, [isModalOpen, userData]);
 
     const handleSignOut = () => {
         auth.signOut();
@@ -56,8 +48,6 @@ function Header() {
     };
 
     const handleEditClick = () => {
-        setFullName(user?.fullName || "");
-        setNewEmail(user?.email || "");
         setIsModalOpen(true);
     };
 
@@ -124,6 +114,13 @@ function Header() {
                 email: user.email,
             }, { merge: true });
 
+            updateUserData({
+                fullName,
+                phoneNumber,
+                birthDate,
+                email: user.email,
+            });
+
             toast.success("Perfil atualizado com sucesso!");
             setIsModalOpen(false);
             setCurrentPassword("");
@@ -161,13 +158,17 @@ function Header() {
         }
     };
 
+    const handleBirthDateChange = (e) => {
+        setBirthDate(formatInputDateMask(e.target.value));
+    };
+
     return (
         <header className="bg-olive-dark text-white py-4 px-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Casar em Carneiros</h1>
                 {user && (
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm">{fullName}</span>
+                        <span className="text-sm">{userData.fullName}</span>
                         <FontAwesomeIcon
                             icon={faPencil}
                             className="white mr-6 w-3 cursor-pointer"
@@ -188,7 +189,7 @@ function Header() {
                 onRequestClose={() => !isUpdatingEmail && !isCheckingEmail && setIsModalOpen(false)}
                 contentLabel="Editar Perfil"
                 className="modal-container w-full max-w-md animate-in fade-in slide-in-from-top-4 duration-300"
-                overlayClassName="modal-overlay"
+                overlayClassName="modal-overlay z-50"
             >
                 <div className="modal-content p-6 bg-white rounded-lg">
                     <div className="flex justify-between items-center">
@@ -211,16 +212,17 @@ function Header() {
                     <InputField
                         label="Número de telefone"
                         type="text"
-                        value={phoneNumber}
+                        value={formatPhoneNumber(phoneNumber )}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         disabled={isUpdatingEmail || isCheckingEmail}
                     />
 
                     <InputField
                         label="Data de Nascimento"
-                        type="date"
+                        type="text"
+                        placeholder="dd/mm/aaaa"
                         value={birthDate}
-                        onChange={(e) => setBirthDate(e.target.value)}
+                        onChange={handleBirthDateChange}
                         disabled={isUpdatingEmail || isCheckingEmail}
                     />
 
