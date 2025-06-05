@@ -10,7 +10,7 @@ import EditUserModal from "../components/EditUserModal";
 import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import DeleteUserModal from "../components/DeleteUserModal";
 import { toast } from "react-toastify";
-import CreateUserModal from "../components/CreateUserModal";
+import CreateClientModal from "../components/CreateClientModal";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
 
 function UsersList() {
@@ -22,6 +22,9 @@ function UsersList() {
     const [userToDelete, setUserToDelete] = useState(null);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+    // Verificar se o usuário logado é admin
+    const isAdmin = userLogged?.email === "airton.vasconcelosjr@gmail.com" || userLogged?.email === "ab@gmail.com";
 
     const handleEditClick = (user) => {
         setSelectedUser(user);
@@ -81,9 +84,9 @@ function UsersList() {
         }
     };
 
-    const handleCreateUser = async (newUser) => {
+    const handleCreateClient = async (newClient) => {
         try {
-            const { email, password, fullName, phoneNumber, birthDate, role } = newUser;
+            const { email, password, fullName, phoneNumber, birthDate } = newClient;
 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
@@ -93,7 +96,7 @@ function UsersList() {
                 fullName,
                 phoneNumber,
                 birthDate,
-                role: role || 'client',
+                role: 'client',
                 createdAt: serverTimestamp(),
             });
 
@@ -103,15 +106,15 @@ function UsersList() {
                 fullName,
                 phoneNumber,
                 birthDate,
-                role: role || 'client',
+                role: 'client',
                 createdAt: serverTimestamp(),
             }]);
 
-            toast.success("Usuário criado com sucesso!");
+            toast.success("Cliente criado com sucesso!");
             setIsCreateOpen(false);
         } catch (error) {
-            console.error("Erro ao criar usuário:", error.message);
-            toast.error(`Erro ao criar usuário: ${error.message}`);
+            console.error("Erro ao criar cliente:", error.message);
+            toast.error(`Erro ao criar cliente: ${error.message}`);
         }
     };
 
@@ -136,9 +139,12 @@ function UsersList() {
         fetchUsers();
     }, []);
 
-    const filteredUsers = userLogged?.email === "airton.vasconcelosjr@gmail.com"
+    const filteredUsers = isAdmin
         ? users
         : users.filter(user => user.role === "client");
+
+    const pageTitle = isAdmin ? "Usuários" : "Clientes";
+    const addButtonText = isAdmin ? "Adicionar Cliente" : "Adicionar Cliente";
 
     return (
         <div className="min-h-screen bg-green-50 p-8">
@@ -149,23 +155,24 @@ function UsersList() {
                             <FontAwesomeIcon icon={faChevronLeft} className="text-2xl hover:scale-125" />
                         </button>
                     </Link>
-                    <h1 className="text-4xl font-bold text-olive-dark">Usuários</h1>
+                    <h1 className="text-4xl font-bold text-olive-dark">{pageTitle}</h1>
                 </div>
 
-                <button
-                    className="bg-olive-dark text-white px-4 py-2 rounded hover:bg-olive"
-                    onClick={() => setIsCreateOpen(true)}
-                >
-                    <FontAwesomeIcon icon={faPlus} className="text-md hover:scale-125 mr-2" />
-                    Adicionar Usuário
-                </button>
-
+                {isAdmin && (
+                    <button
+                        className="bg-olive-dark text-white px-4 py-2 rounded hover:bg-olive"
+                        onClick={() => setIsCreateOpen(true)}
+                    >
+                        <FontAwesomeIcon icon={faPlus} className="text-md hover:scale-125 mr-2" />
+                        {addButtonText}
+                    </button>
+                )}
             </div>
 
             {loading ? (
-                <p className="text-lg text-gray-700">Carregando usuários...</p>
+                <p className="text-lg text-gray-700">Carregando {pageTitle.toLowerCase()}...</p>
             ) : filteredUsers.length === 0 ? (
-                <p className="text-lg text-gray-700">Nenhum usuário encontrado.</p>
+                <p className="text-lg text-gray-700">Nenhum {pageTitle.toLowerCase().slice(0, -1)} encontrado.</p>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="min-w-full bg-white shadow-md rounded-lg">
@@ -175,7 +182,7 @@ function UsersList() {
                                 <th className="py-3 px-6 text-left">Telefone</th>
                                 <th className="py-3 px-6 text-left">Email</th>
                                 <th className="py-3 px-6 text-left">Dt de Nascimento</th>
-                                <th className="py-3 px-6 text-left">Função</th>
+                                {isAdmin && <th className="py-3 px-6 text-left">Função</th>}
                                 <th className="py-3 px-6 text-left">Ações</th>
                             </tr>
                         </thead>
@@ -183,12 +190,17 @@ function UsersList() {
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="border-b border-gray-200 hover:bg-green-100">
                                     <td className="py-4 px-6 text-olive-dark font-medium">{user.fullName || "—"}</td>
-                                    <td>{formatPhoneNumber(user.phoneNumber || "—")}</td>
+                                    <td className="py-4 px-6 text-gray-700">{formatPhoneNumber(user.phoneNumber || "—")}</td>
                                     <td className="py-4 px-6 text-gray-700">{user.email || "—"}</td>
                                     <td className="py-4 px-6 text-gray-700">{formatDateBR(user.birthDate)}</td>
-                                    <td className="py-4 px-6 capitalize">
-                                        {user.role === "client" ? "Cliente" : user.role || "—"}
-                                    </td>
+                                    {isAdmin && (
+                                        <td className="py-4 px-6 capitalize">
+                                            {user.role === "client" ? "Cliente" :
+                                                user.role === "user" ? "Usuário" :
+                                                    user.role === "admin" ? "Administrador" :
+                                                        user.role || "—"}
+                                        </td>
+                                    )}
                                     <td className="py-4 px-6 flex items-center gap-4">
                                         <button
                                             onClick={() => handleEditClick(user)}
@@ -198,13 +210,15 @@ function UsersList() {
                                             <FontAwesomeIcon icon={faPencil} />
                                         </button>
 
-                                        <button
-                                            onClick={() => handleDeleteClick({ id: user.id, fullName: user.fullName })}
-                                            className="text-red-600 hover:text-red-800 transition"
-                                            title="Excluir"
-                                        >
-                                            <FontAwesomeIcon icon={faTrash} />
-                                        </button>
+                                        {isAdmin && (
+                                            <button
+                                                onClick={() => handleDeleteClick({ id: user.id, fullName: user.fullName })}
+                                                className="text-red-600 hover:text-red-800 transition"
+                                                title="Excluir"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -216,20 +230,24 @@ function UsersList() {
                         onClose={() => setIsEditOpen(false)}
                         onSave={handleEditSave}
                     />
-                    <DeleteUserModal
-                        isOpen={isDeleteOpen}
-                        onClose={() => setIsDeleteOpen(false)}
-                        onConfirm={handleDeleteConfirm}
-                        user={userToDelete}
-                    />
-
+                    {isAdmin && (
+                        <DeleteUserModal
+                            isOpen={isDeleteOpen}
+                            onClose={() => setIsDeleteOpen(false)}
+                            onConfirm={handleDeleteConfirm}
+                            user={userToDelete}
+                        />
+                    )}
                 </div>
             )}
-            <CreateUserModal
-                isOpen={isCreateOpen}
-                onClose={() => setIsCreateOpen(false)}
-                onCreate={handleCreateUser}
-            />
+
+            {isAdmin && (
+                <CreateClientModal
+                    isOpen={isCreateOpen}
+                    onClose={() => setIsCreateOpen(false)}
+                    onCreate={handleCreateClient}
+                />
+            )}
         </div>
     );
 }

@@ -1,19 +1,15 @@
 import React, { useState } from "react";
 import { parseDateFromBRFormat, formatInputDateMask } from "../utils/formatters";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
 import InputField from "./InputField";
 
-function CreateUserModal({ isOpen, onClose, onCreate }) {
+function CreateClientModal({ isOpen, onClose, onCreate }) {
     const [fullName, setFullName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState("client");
     const [birthDate, setBirthDate] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
-    const [userLogged] = useAuthState(auth);
 
     const handleBirthDateChange = (e) => {
         setBirthDate(formatInputDateMask(e.target.value));
@@ -33,22 +29,21 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
             return;
         }
 
-        const newUser = {
+        const newClient = {
             fullName,
             phoneNumber,
             email,
-            role,
+            role: "client",
             birthDate: parseDateFromBRFormat(birthDate),
             password,
         };
 
-        onCreate(newUser);
+        onCreate(newClient);
         onClose();
 
         setFullName("");
         setPhoneNumber("");
         setEmail("");
-        setRole("client");
         setBirthDate("");
         setPassword("");
         setConfirmPassword("");
@@ -59,7 +54,7 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Adicionar Usuário</h2>
+                <h2 className="text-2xl font-bold mb-4">Adicionar Cliente</h2>
                 {error && <p className="mb-4 text-red-600">{error}</p>}
                 <form onSubmit={handleSubmit}>
                     <InputField
@@ -105,21 +100,6 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                     />
 
-                    {userLogged?.email === "airton.vasconcelosjr@gmail.com" && (
-                        <div className="mb-4">
-                            <label className="block text-gray-700">Função</label>
-                            <select
-                                className="w-full border border-gray-300 rounded p-2"
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
-                            >
-                                <option value="client">Cliente</option>
-                                {/* <option value="admin">Administrador</option> */}
-                                <option value="user">Usuário</option>
-                            </select>
-                        </div>
-                    )}
-
                     <div className="flex justify-end gap-4">
                         <button
                             type="button"
@@ -132,7 +112,7 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
                             type="submit"
                             className="px-4 py-2 bg-olive-dark text-white rounded hover:bg-olive"
                         >
-                            Criar
+                            Criar Cliente
                         </button>
                     </div>
                 </form>
@@ -141,4 +121,4 @@ function CreateUserModal({ isOpen, onClose, onCreate }) {
     );
 }
 
-export default CreateUserModal;
+export default CreateClientModal;
