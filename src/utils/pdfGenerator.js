@@ -1,5 +1,4 @@
 import jsPDF from "jspdf";
-import { PDFDocument } from 'pdf-lib';
 import { formatDateBR, formatCurrencyBR } from "./formatters";
 
 export async function generateOrcamentoPdf(orcamento) {
@@ -187,7 +186,6 @@ async function generateOrcamentoPageIntegrated(doc, orcamento, primaryColor) {
 }
 
 function generateThankYouPage(doc, primaryColor) {
-    const margin = 20;
     let y = 80;
 
     doc.setFontSize(24);
