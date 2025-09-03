@@ -6,7 +6,9 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
+### `npm install`
 ### `npm start`
+### `nvm use --lts
 
 ### Projeto feito para finalidade de estudo, plataforma de orçamento de festa de casamento e acompanhamento.
 
