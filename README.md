@@ -29,3 +29,8 @@ In the project directory, you can run:
 ![Screenshot from 2025-05-22 17-27-12](https://github.com/user-attachments/assets/c5e2904c-657a-492f-91bb-38e492696c1f)
 
 ![Screenshot from 2025-05-22 17-27-24](https://github.com/user-attachments/assets/83698b7a-02c0-4204-b6f6-09973ffe8a45)
+
+
+Ao alterar arquivos rodar:
+npm run build
+firebase deploy
