@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faPencil, faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { formatPhoneNumber, formatDateBR } from '../utils/formatters';
 import EditUserModal from "../components/EditUserModal";
-import { doc, updateDoc, deleteDoc, setDoc, serverTimestamp, orderBy } from "firebase/firestore";
 import DeleteUserModal from "../components/DeleteUserModal";
-import { toast } from "react-toastify";
 import CreateClientModal from "../components/CreateClientModal";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
 
 function UsersList() {
     const [users, setUsers] = useState([]);
@@ -22,6 +21,9 @@ function UsersList() {
     const [userToDelete, setUserToDelete] = useState(null);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const itemsPerPage = 5;
 
     // Verificar se o usuário logado é admin
     const isAdmin = userLogged?.email === "airton.vasconcelosjr@gmail.com" || userLogged?.email === "ab@gmail.com";
@@ -63,10 +65,10 @@ function UsersList() {
 
             try {
                 const adminAuth = getAuth();
-                const userToDelete = adminAuth.currentUser;
+                const userToDeleteAuth = adminAuth.currentUser;
 
-                if (userToDelete && userToDelete.uid === user.id) {
-                    await deleteUser(userToDelete);
+                if (userToDeleteAuth && userToDeleteAuth.uid === user.id) {
+                    await deleteUser(userToDeleteAuth);
                 } else {
                     console.log("Não foi possível excluir o usuário do Auth diretamente. Um Cloud Function seria necessário.");
                 }
@@ -76,7 +78,6 @@ function UsersList() {
 
             setUsers(prev => prev.filter(u => u.id !== user.id));
             setIsDeleteOpen(false);
-            console.log("Usuário excluído com sucesso:", user.fullName);
             toast.success("Usuário excluído com sucesso!");
         } catch (error) {
             console.error("Erro ao excluir usuário:", error);
@@ -91,16 +92,7 @@ function UsersList() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
 
-            await setDoc(doc(db, "users", userId), {
-                email,
-                fullName,
-                phoneNumber,
-                birthDate,
-                role: 'client',
-                createdAt: serverTimestamp(),
-            });
-
-            setUsers(prev => [...prev, {
+            const newUser = {
                 id: userId,
                 email,
                 fullName,
@@ -108,8 +100,11 @@ function UsersList() {
                 birthDate,
                 role: 'client',
                 createdAt: serverTimestamp(),
-            }]);
+            };
 
+            await setDoc(doc(db, "users", userId), newUser);
+
+            setUsers(prev => [...prev, newUser]);
             toast.success("Cliente criado com sucesso!");
             setIsCreateOpen(false);
         } catch (error) {
@@ -122,13 +117,12 @@ function UsersList() {
         async function fetchUsers() {
             setLoading(true);
             try {
-                const querySnapshot = await getDocs(collection(db, "users"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(collection(db, "users"));
                 const usersList = [];
                 querySnapshot.forEach((doc) => {
                     usersList.push({ id: doc.id, ...doc.data() });
                 });
                 setUsers(usersList);
-                console.log(usersList);
             } catch (error) {
                 console.error("Erro ao buscar usuários:", error);
             } finally {
@@ -143,8 +137,13 @@ function UsersList() {
         ? users
         : users.filter(user => user.role === "client");
 
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
+
     const pageTitle = isAdmin ? "Usuários" : "Clientes";
-    const addButtonText = isAdmin ? "Adicionar Cliente" : "Adicionar Cliente";
+    const addButtonText = "Adicionar Cliente";
 
     return (
         <div className="min-h-screen bg-green-50 p-8">
@@ -155,7 +154,7 @@ function UsersList() {
                             <FontAwesomeIcon icon={faChevronLeft} className="text-2xl hover:scale-125" />
                         </button>
                     </Link>
-                    <h1 className="text-4xl font-bold text-olive-dark">{pageTitle}</h1>
+                    <h1 className="text-2xl md:text-4xl font-bold text-olive-dark truncate">{pageTitle}</h1>
                 </div>
 
                 {isAdmin && (
@@ -164,7 +163,7 @@ function UsersList() {
                         onClick={() => setIsCreateOpen(true)}
                     >
                         <FontAwesomeIcon icon={faPlus} className="text-md hover:scale-125 mr-2" />
-                        {addButtonText}
+                        <span className="hidden md:inline ml-2">{addButtonText}</span>
                     </button>
                 )}
             </div>
@@ -174,73 +173,124 @@ function UsersList() {
             ) : filteredUsers.length === 0 ? (
                 <p className="text-lg text-gray-700">Nenhum {pageTitle.toLowerCase().slice(0, -1)} encontrado.</p>
             ) : (
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white shadow-md rounded-lg">
-                        <thead className="bg-olive-dark text-white">
-                            <tr>
-                                <th className="py-3 px-6 text-left">Nome</th>
-                                <th className="py-3 px-6 text-left">Telefone</th>
-                                <th className="py-3 px-6 text-left">Email</th>
-                                <th className="py-3 px-6 text-left">Dt de Nascimento</th>
-                                {isAdmin && <th className="py-3 px-6 text-left">Função</th>}
-                                <th className="py-3 px-6 text-left">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.map((user) => (
-                                <tr key={user.id} className="border-b border-gray-200 hover:bg-green-100">
-                                    <td className="py-4 px-6 text-olive-dark font-medium">{user.fullName || "—"}</td>
-                                    <td className="py-4 px-6 text-gray-700">{formatPhoneNumber(user.phoneNumber || "—")}</td>
-                                    <td className="py-4 px-6 text-gray-700">{user.email || "—"}</td>
-                                    <td className="py-4 px-6 text-gray-700">{formatDateBR(user.birthDate)}</td>
-                                    {isAdmin && (
-                                        <td className="py-4 px-6 capitalize">
-                                            {user.role === "client" ? "Cliente" :
-                                                user.role === "user" ? "Usuário" :
-                                                    user.role === "admin" ? "Administrador" :
-                                                        user.role || "—"}
-                                        </td>
-                                    )}
-                                    <td className="py-4 px-6 flex items-center gap-4">
-                                        <button
-                                            onClick={() => handleEditClick(user)}
-                                            className="text-olive hover:text-black transition"
-                                            title="Editar"
-                                        >
-                                            <FontAwesomeIcon icon={faPencil} />
-                                        </button>
-
+                <>
+                    {/* Desktop Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <table className="min-w-full bg-white shadow-md rounded-lg">
+                            <thead className="bg-olive-dark text-white">
+                                <tr>
+                                    <th className="py-3 px-6 text-left">Nome</th>
+                                    <th className="py-3 px-6 text-left">Telefone</th>
+                                    <th className="py-3 px-6 text-left">Email</th>
+                                    <th className="py-3 px-6 text-left">Dt de Nascimento</th>
+                                    {isAdmin && <th className="py-3 px-6 text-left">Função</th>}
+                                    <th className="py-3 px-6 text-left">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUsers.map((user) => (
+                                    <tr key={user.id} className="border-b border-gray-200 hover:bg-green-100">
+                                        <td className="py-4 px-6 text-olive-dark font-medium">{user.fullName || "—"}</td>
+                                        <td className="py-4 px-6 text-gray-700">{formatPhoneNumber(user.phoneNumber || "—")}</td>
+                                        <td className="py-4 px-6 text-gray-700">{user.email || "—"}</td>
+                                        <td className="py-4 px-6 text-gray-700">{formatDateBR(user.birthDate)}</td>
                                         {isAdmin && (
+                                            <td className="py-4 px-6 capitalize">
+                                                {user.role === "client" ? "Cliente" :
+                                                    user.role === "user" ? "Usuário" :
+                                                        user.role === "admin" ? "Administrador" :
+                                                            user.role || "—"}
+                                            </td>
+                                        )}
+                                        <td className="py-4 px-6 flex items-center gap-4">
                                             <button
-                                                onClick={() => handleDeleteClick({ id: user.id, fullName: user.fullName })}
-                                                className="text-red-600 hover:text-red-800 transition"
-                                                title="Excluir"
+                                                onClick={() => handleEditClick(user)}
+                                                className="text-olive hover:text-black transition"
+                                                title="Editar"
                                             >
-                                                <FontAwesomeIcon icon={faTrash} />
+                                                <FontAwesomeIcon icon={faPencil} />
+                                            </button>
+
+                                            {isAdmin && (
+                                                <button
+                                                    onClick={() => handleDeleteClick({ id: user.id, fullName: user.fullName })}
+                                                    className="text-red-600 hover:text-red-800 transition"
+                                                    title="Excluir"
+                                                >
+                                                    <FontAwesomeIcon icon={faTrash} />
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Mobile Cards */}
+                    <div className="flex flex-col md:hidden gap-4">
+                        {currentUsers.map((user) => (
+                            <div key={user.id} className="bg-white p-4 rounded-xl shadow-md flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-bold text-olive-dark">{user.fullName}</span>
+                                    <div className="flex gap-4">
+                                        <button onClick={() => handleEditClick(user)}>
+                                            <FontAwesomeIcon icon={faPencil} size="lg" className="text-olive" />
+                                        </button>
+                                        {isAdmin && (
+                                            <button onClick={() => handleDeleteClick({ id: user.id, fullName: user.fullName })}>
+                                                <FontAwesomeIcon icon={faTrash} size="lg" className="text-red-600" />
                                             </button>
                                         )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <EditUserModal
-                        user={selectedUser}
-                        isOpen={isEditOpen}
-                        onClose={() => setIsEditOpen(false)}
-                        onSave={handleEditSave}
-                    />
-                    {isAdmin && (
-                        <DeleteUserModal
-                            isOpen={isDeleteOpen}
-                            onClose={() => setIsDeleteOpen(false)}
-                            onConfirm={handleDeleteConfirm}
-                            user={userToDelete}
-                        />
-                    )}
-                </div>
+                                    </div>
+                                </div>
+                                <div className="text-sm text-gray-700">
+                                    <p><span className="font-semibold">Telefone:</span> {formatPhoneNumber(user.phoneNumber || "—")}</p>
+                                    <p><span className="font-semibold">Email:</span> {user.email || "—"}</p>
+                                    <p><span className="font-semibold">Dt Nascimento:</span> {formatDateBR(user.birthDate)}</p>
+                                    {isAdmin && (
+                                        <p><span className="font-semibold">Função:</span> {user.role === "client" ? "Cliente" : user.role === "user" ? "Usuário" : user.role === "admin" ? "Administrador" : "—"}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Mobile Pagination */}
+                        <div className="flex justify-between mt-4">
+                            <button
+                                className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(prev => prev - 1)}
+                            >
+                                Anterior
+                            </button>
+                            <span className="self-center text-sm">{currentPage} / {totalPages}</span>
+                            <button
+                                className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(prev => prev + 1)}
+                            >
+                                Próximo
+                            </button>
+                        </div>
+                    </div>
+                </>
             )}
 
+            <EditUserModal
+                user={selectedUser}
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                onSave={handleEditSave}
+            />
+            {isAdmin && (
+                <DeleteUserModal
+                    isOpen={isDeleteOpen}
+                    onClose={() => setIsDeleteOpen(false)}
+                    onConfirm={handleDeleteConfirm}
+                    user={userToDelete}
+                />
+            )}
             {isAdmin && (
                 <CreateClientModal
                     isOpen={isCreateOpen}

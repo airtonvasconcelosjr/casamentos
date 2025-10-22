@@ -80,7 +80,7 @@ function Home() {
                     {role === "admin" && (
                         <>
                             <Link to="/users" className="w-full max-w-md">
-                                <Card title="Usuários" description="Gerencie os usuários cadastrados." />
+                                <Card title="Usuários" description="Gerencie os usuários/clientes cadastrados." />
                             </Link>
                             <Link to="/orcamentos" className="w-full max-w-md">
                                 <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
