@@ -39,24 +39,37 @@ function Login() {
         }
     };
 
+
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-b from-white via-olive-50 to-white">
+            {/* Desktop background image with overlay */}
             <div
-                className="w-1/2 bg-cover bg-center relative"
+                className="hidden md:block w-1/2 bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${Capa})` }}
             >
                 <div className="absolute inset-0 bg-black bg-opacity-30"></div>
             </div>
 
-            <div className="w-1/2 flex items-center justify-center bg-white relative z-10">
-                <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                    <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
+            {/* Mobile background image with overlay */}
+            <div
+                className="absolute inset-0 bg-cover bg-center md:hidden"
+                style={{ backgroundImage: `url(${Capa})` }}
+            >
+                <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-6 md:p-0">
+                <div className="bg-white p-8 md:p-8 rounded-3xl shadow-xl w-full max-w-md transform transition-all duration-700 ease-in-out animate-fade-slide">
+                    <h1 className="text-3xl font-bold mb-4 text-center text-olive-dark drop-shadow-sm">
+                        CASAR EM CARNEIROS
+                    </h1>
+                    <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Login</h2>
                     <form onSubmit={handleLogin}>
                         <div className="mb-4">
                             <label className="block text-gray-700">E-mail</label>
                             <input
                                 type="email"
-                                className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full px-4 py-3 mt-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-dark focus:shadow-lg transition duration-300"
                                 placeholder="email@exemplo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -67,25 +80,24 @@ function Login() {
                             <label className="block text-gray-700">Senha</label>
                             <input
                                 type="password"
-                                className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                className="w-full px-4 py-3 mt-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-olive-dark focus:shadow-lg transition duration-300"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
                         </div>
-                        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+                        {error && (
+                            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+                        )}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-olive text-white py-2 rounded-md hover:bg-olive-dark transition-colors disabled:opacity-50"
+                            className="w-full bg-olive-dark text-white py-3 rounded-xl hover:bg-olive transition-colors duration-300 disabled:opacity-50"
                         >
                             {loading ? "Entrando..." : "Entrar"}
                         </button>
                     </form>
-                    {/* <Link to="/register" className="text-olive-dark hover:text-olive mt-4 text-sm block text-center">
-                        Cadastrar-se
-                    </Link> */}
                 </div>
             </div>
         </div>
