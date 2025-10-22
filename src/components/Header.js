@@ -11,7 +11,7 @@ import {
     verifyBeforeUpdateEmail
 } from "firebase/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faPencil, faTimes, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
 import InputField from "../components/InputField";
 import { formatInputDateMask, formatPhoneNumber } from "../utils/formatters";
@@ -165,23 +165,31 @@ function Header() {
     return (
         <header className="bg-olive-dark text-white py-4 px-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Casar em Carneiros</h1>
+                <h1 className="text-xl md:text-2xl font-bold">
+                    Casar em Carneiros
+                </h1>
+
                 {user && (
                     <div className="flex items-center space-x-4">
                         <span className="text-sm">{userData.fullName}</span>
+
                         <FontAwesomeIcon
                             icon={faPencil}
-                            className="white mr-6 w-3 cursor-pointer"
+                            className="text-white mr-6 w-3 cursor-pointer"
                             onClick={handleEditClick}
                         />
+
                         <button
                             onClick={handleSignOut}
-                            className="bg-olive-light text-black py-1 px-3 ml-2 rounded-md hover:bg-gray-100"
+                            className="bg-olive-light text-black py-1 px-3 ml-2 rounded-md hover:bg-gray-100 flex items-center justify-center"
                         >
-                            Sair
+                            <FontAwesomeIcon icon={faSignOutAlt} className="block md:hidden text-olive-dark" />
+
+                            <span className="hidden md:block">Sair</span>
                         </button>
                     </div>
                 )}
+
             </div>
 
             <Modal
@@ -212,7 +220,7 @@ function Header() {
                     <InputField
                         label="Número de telefone"
                         type="text"
-                        value={formatPhoneNumber(phoneNumber )}
+                        value={formatPhoneNumber(phoneNumber)}
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         disabled={isUpdatingEmail || isCheckingEmail}
                     />
