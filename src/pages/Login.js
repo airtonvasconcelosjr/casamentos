@@ -83,9 +83,9 @@ function Login() {
                             {loading ? "Entrando..." : "Entrar"}
                         </button>
                     </form>
-                    <Link to="/register" className="text-olive-dark hover:text-olive mt-4 text-sm block text-center">
+                    {/* <Link to="/register" className="text-olive-dark hover:text-olive mt-4 text-sm block text-center">
                         Cadastrar-se
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
         </div>
