@@ -52,11 +52,18 @@ function Login() {
 
             {/* Mobile background image with overlay */}
             <div
-                className="absolute inset-0 bg-cover bg-center md:hidden"
-                style={{ backgroundImage: `url(${Capa})` }}
+                className="absolute inset-0 md:hidden"
+                style={{
+                    backgroundImage: `url(${Capa})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    backgroundAttachment: "fixed",
+                }}
             >
                 <div className="absolute inset-0 bg-black bg-opacity-30"></div>
             </div>
+
 
             <div className="flex-1 flex items-center justify-center p-6 md:p-0">
                 <div className="bg-white p-8 md:p-8 rounded-3xl shadow-xl w-full max-w-md transform transition-all duration-700 ease-in-out animate-fade-slide">
