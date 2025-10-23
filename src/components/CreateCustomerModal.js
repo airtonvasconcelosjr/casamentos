@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { parseDateFromBRFormat, formatInputDateMask } from "../utils/formatters";
 import InputField from "./InputField";
 
-function CreateClientModal({ isOpen, onClose, onCreate }) {
+function CreateCustomerModal({ isOpen, onClose, onCreate }) {
     const [fullName, setFullName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [email, setEmail] = useState("");
     const [birthDate, setBirthDate] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [weddingDate, setWeddingDate] = useState("");
+    const [partnerName, setPartnerName] = useState("");
     const [error, setError] = useState("");
 
     const handleBirthDateChange = (e) => {
@@ -19,34 +19,30 @@ function CreateClientModal({ isOpen, onClose, onCreate }) {
         e.preventDefault();
         setError("");
 
-        if (password !== confirmPassword) {
-            setError("As senhas não coincidem.");
+        if (!fullName || !partnerName || !email || !birthDate) {
+            setError("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
 
-        if (!fullName || !phoneNumber || !email || !birthDate || !password) {
-            setError("Por favor, preencha todos os campos.");
-            return;
-        }
-
-        const newClient = {
+        const newCustomer = {
             fullName,
+            partnerName,
             phoneNumber,
             email,
-            role: "client",
             birthDate: parseDateFromBRFormat(birthDate),
-            password,
+            createdAt: new Date(),
         };
 
-        onCreate(newClient);
+        onCreate(newCustomer);
         onClose();
 
+        // limpa campos
         setFullName("");
+        setPartnerName("");
         setPhoneNumber("");
         setEmail("");
         setBirthDate("");
-        setPassword("");
-        setConfirmPassword("");
+        setWeddingDate("");
     };
 
     if (!isOpen) return null;
@@ -54,14 +50,21 @@ function CreateClientModal({ isOpen, onClose, onCreate }) {
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Adicionar Cliente</h2>
-                {error && <p className="mb-4 text-red-600">{error}</p>}
+                <h2 className="text-2xl font-bold mb-4 text-olive-dark">Adicionar Cliente</h2>
+                {error && <p className="mb-4 text-red-600 text-sm">{error}</p>}
                 <form onSubmit={handleSubmit}>
                     <InputField
                         label="Nome completo"
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
+                    />
+
+                    <InputField
+                        label="Nome do parceiro(a)"
+                        type="text"
+                        value={partnerName}
+                        onChange={(e) => setPartnerName(e.target.value)}
                     />
 
                     <InputField
@@ -72,7 +75,7 @@ function CreateClientModal({ isOpen, onClose, onCreate }) {
                     />
 
                     <InputField
-                        label="Email"
+                        label="E-mail"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -86,21 +89,7 @@ function CreateClientModal({ isOpen, onClose, onCreate }) {
                         onChange={handleBirthDateChange}
                     />
 
-                    <InputField
-                        label="Senha"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    <InputField
-                        label="Confirme a senha"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-
-                    <div className="flex justify-end gap-4">
+                    <div className="flex justify-end gap-4 mt-6">
                         <button
                             type="button"
                             onClick={onClose}
@@ -121,4 +110,4 @@ function CreateClientModal({ isOpen, onClose, onCreate }) {
     );
 }
 
-export default CreateClientModal;
+export default CreateCustomerModal;
