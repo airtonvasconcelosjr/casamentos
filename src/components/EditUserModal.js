@@ -89,7 +89,6 @@ function EditUserModal({ user, isOpen, onClose, onSave }) {
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
                             >
-                                <option value="client">Cliente</option>
                                 <option value="admin">Administrador</option>
                                 <option value="staff">Funcionário</option>
                             </select>

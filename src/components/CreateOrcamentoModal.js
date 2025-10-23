@@ -4,7 +4,7 @@ import { db } from "../firebase";
 import { toast } from "react-toastify";
 
 function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoToEdit }) {
-    const [users, setUsers] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
@@ -60,48 +60,52 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
     }, [orcamentoToEdit]);
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchCustomers = async () => {
             try {
-                const usersSnapshot = await getDocs(collection(db, "users"));
-                const usersList = usersSnapshot.docs.map(doc => ({
+                const customersSnapshot = await getDocs(collection(db, "customers"));
+                const customersList = customersSnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 }));
-                setUsers(usersList);
+                setCustomers(customersList);
                 setLoading(false);
             } catch (error) {
-                console.error("Erro ao buscar usuários:", error);
+                console.error("Erro ao buscar clientes:", error);
                 setLoading(false);
             }
         };
 
         if (isOpen) {
-            fetchUsers();
+            fetchCustomers();
         }
     }, [isOpen]);
 
-    useEffect(() => {
-        if (formData.clienteSelecionado) {
-            const clienteSelecionado = users.find(user => user.id === formData.clienteSelecionado);
-            if (clienteSelecionado) {
-                if (formData.papelClienteSelecionado === "noivo") {
-                    setFormData(prev => ({
-                        ...prev,
-                        nomeNoivo: clienteSelecionado.fullName || ""
-                    }));
-                } else {
-                    setFormData(prev => ({
-                        ...prev,
-                        nomeNoiva: clienteSelecionado.fullName || ""
-                    }));
-                }
-            }
-        }
-    }, [formData.clienteSelecionado, formData.papelClienteSelecionado, users]);
-
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+
+        if (name === "clienteSelecionado") {
+            const selectedCustomer = customers.find(c => c.id === value);
+
+            setFormData(prev => ({
+                ...prev,
+                clienteSelecionado: value,
+                // Preenche o nome do noivo ou noiva baseado no papel selecionado
+                nomeNoivo: prev.papelClienteSelecionado === "noivo" ? (selectedCustomer?.fullName || "") : "",
+                nomeNoiva: prev.papelClienteSelecionado === "noiva" ? (selectedCustomer?.fullName || "") : ""
+            }));
+        } else if (name === "papelClienteSelecionado") {
+            const selectedCustomer = customers.find(c => c.id === formData.clienteSelecionado);
+
+            setFormData(prev => ({
+                ...prev,
+                papelClienteSelecionado: value,
+                // Preenche o campo correto e LIMPA o outro
+                nomeNoivo: value === "noivo" ? (selectedCustomer?.fullName || "") : "",
+                nomeNoiva: value === "noiva" ? (selectedCustomer?.fullName || "") : ""
+            }));
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
     const handleServiceChange = (service, field, value) => {
@@ -154,7 +158,7 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
         e.stopPropagation();
 
         try {
-            const clienteSelecionado = users.find(user => user.id === formData.clienteSelecionado);
+            const clienteSelecionado = customers.find(customer => customer.id === formData.clienteSelecionado);
             const valorTotal = calculateTotalValue();
 
             const orcamentoData = {
@@ -214,7 +218,7 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
                     <div className="p-6">
                         <h2 className="text-2xl font-bold text-olive-dark mb-6">Dados do Casal</h2>
                         {loading ? (
-                            <div className="text-center py-4">Carregando usuários...</div>
+                            <div className="text-center py-4">Carregando clientes...</div>
                         ) : (
                             <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -230,9 +234,9 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
                                             required
                                         >
                                             <option value="">Selecione um cliente</option>
-                                            {users.map(user => (
-                                                <option key={user.id} value={user.id}>
-                                                    {user.fullName}
+                                            {customers.map(customer => (
+                                                <option key={customer.id} value={customer.id}>
+                                                    {customer.fullName}
                                                 </option>
                                             ))}
                                         </select>
@@ -261,7 +265,8 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
                                         <input
                                             type="text"
                                             name="nomeNoivo"
-                                            className="w-full p-2 border border-gray-300 rounded"
+                                            className={`w-full p-2 border border-gray-300 rounded ${formData.papelClienteSelecionado === "noivo" ? "bg-gray-100" : ""
+                                                }`}
                                             value={formData.nomeNoivo}
                                             onChange={handleChange}
                                             readOnly={formData.papelClienteSelecionado === "noivo"}
@@ -275,7 +280,8 @@ function CreateOrcamentoModal({ isOpen, onClose, onOrcamentoCreated, orcamentoTo
                                         <input
                                             type="text"
                                             name="nomeNoiva"
-                                            className="w-full p-2 border border-gray-300 rounded"
+                                            className={`w-full p-2 border border-gray-300 rounded ${formData.papelClienteSelecionado === "noiva" ? "bg-gray-100" : ""
+                                                }`}
                                             value={formData.nomeNoiva}
                                             onChange={handleChange}
                                             readOnly={formData.papelClienteSelecionado === "noiva"}

@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { formatPhoneNumber, formatDateBR } from '../utils/formatters';
 import EditUserModal from "../components/EditUserModal";
 import DeleteUserModal from "../components/DeleteUserModal";
-import CreateClientModal from "../components/CreateClientModal";
+import CreateUserModal from "../components/CreateUserModal";
 import { createUserWithEmailAndPassword, deleteUser, getAuth } from "firebase/auth";
 import { toast } from "react-toastify";
 
@@ -85,9 +85,9 @@ function UsersList() {
         }
     };
 
-    const handleCreateClient = async (newClient) => {
+    const handleCreateUser = async (newUser) => {
         try {
-            const { email, password, fullName, phoneNumber, birthDate } = newClient;
+            const { email, password, fullName, phoneNumber, birthDate } = newUser;
 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const userId = userCredential.user.uid;
@@ -98,18 +98,18 @@ function UsersList() {
                 fullName,
                 phoneNumber,
                 birthDate,
-                role: 'client',
+                role: 'staff',
                 createdAt: serverTimestamp(),
             };
 
             await setDoc(doc(db, "users", userId), newUser);
 
             setUsers(prev => [...prev, newUser]);
-            toast.success("Cliente criado com sucesso!");
+            toast.success("Usuário criado com sucesso!");
             setIsCreateOpen(false);
         } catch (error) {
-            console.error("Erro ao criar cliente:", error.message);
-            toast.error(`Erro ao criar cliente: ${error.message}`);
+            console.error("Erro ao criar usuário:", error.message);
+            toast.error(`Erro ao criar usuário: ${error.message}`);
         }
     };
 
@@ -135,15 +135,15 @@ function UsersList() {
 
     const filteredUsers = isAdmin
         ? users
-        : users.filter(user => user.role === "client");
+        : users.filter(user => user.role === "User");
 
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
-    const pageTitle = isAdmin ? "Usuários" : "Clientes";
-    const addButtonText = "Adicionar Cliente";
+    const pageTitle = isAdmin ? "Usuários" : "usuários";
+    const addButtonText = "Adicionar usuário";
 
     return (
         <div className="min-h-screen bg-green-50 p-8">
@@ -182,7 +182,7 @@ function UsersList() {
                                     <th className="py-3 px-6 text-left">Nome</th>
                                     <th className="py-3 px-6 text-left">Telefone</th>
                                     <th className="py-3 px-6 text-left">Email</th>
-                                    <th className="py-3 px-6 text-left">Dt de Nascimento</th>
+                                    <th className="py-3 px-6 text-left">Nascimento</th>
                                     {isAdmin && <th className="py-3 px-6 text-left">Função</th>}
                                     <th className="py-3 px-6 text-left">Ações</th>
                                 </tr>
@@ -196,8 +196,8 @@ function UsersList() {
                                         <td className="py-4 px-6 text-gray-700">{formatDateBR(user.birthDate)}</td>
                                         {isAdmin && (
                                             <td className="py-4 px-6 capitalize">
-                                                {user.role === "client" ? "Cliente" :
-                                                    user.role === "user" ? "Usuário" :
+                                                {user.role === "Staff" ? "Usuário" :
+                                                    user.role === "client" ? "Cliente" :
                                                         user.role === "admin" ? "Administrador" :
                                                             user.role || "—"}
                                             </td>
@@ -249,30 +249,33 @@ function UsersList() {
                                     <p><span className="font-semibold">Email:</span> {user.email || "—"}</p>
                                     <p><span className="font-semibold">Dt Nascimento:</span> {formatDateBR(user.birthDate)}</p>
                                     {isAdmin && (
-                                        <p><span className="font-semibold">Função:</span> {user.role === "client" ? "Cliente" : user.role === "user" ? "Usuário" : user.role === "admin" ? "Administrador" : "—"}</p>
+                                        <p><span className="font-semibold">Função:</span> {user.role === "User" ? "usuário" : user.role === "user" ? "Usuário" : user.role === "admin" ? "Administrador" : "—"}</p>
                                     )}
                                 </div>
                             </div>
                         ))}
 
                         {/* Mobile Pagination */}
-                        <div className="flex justify-between mt-4">
-                            <button
-                                className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage(prev => prev - 1)}
-                            >
-                                Anterior
-                            </button>
-                            <span className="self-center text-sm">{currentPage} / {totalPages}</span>
-                            <button
-                                className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
-                                disabled={currentPage === totalPages}
-                                onClick={() => setCurrentPage(prev => prev + 1)}
-                            >
-                                Próximo
-                            </button>
-                        </div>
+                        {totalPages > 1 && (
+                            <div className="flex justify-between mt-4">
+                                <button
+                                    className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(prev => prev - 1)}
+                                >
+                                    Anterior
+                                </button>
+                                <span className="self-center text-sm">{currentPage} / {totalPages}</span>
+                                <button
+                                    className="bg-olive-dark text-white px-4 py-2 rounded disabled:opacity-50"
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(prev => prev + 1)}
+                                >
+                                    Próximo
+                                </button>
+                            </div>
+                        )}
+
                     </div>
                 </>
             )}
@@ -292,10 +295,10 @@ function UsersList() {
                 />
             )}
             {isAdmin && (
-                <CreateClientModal
+                <CreateUserModal
                     isOpen={isCreateOpen}
                     onClose={() => setIsCreateOpen(false)}
-                    onCreate={handleCreateClient}
+                    onCreate={handleCreateUser}
                 />
             )}
         </div>

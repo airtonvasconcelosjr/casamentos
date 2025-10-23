@@ -8,6 +8,7 @@ import AuthLayout from "./layouts/AuthLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import Users from "./pages/UsersList";
 import Orcamentos from "./pages/OrcamentosList";
+import Clientes from "./pages/CustomersList";
 
 function AppRoutes() {
   return (
@@ -41,6 +42,14 @@ function AppRoutes() {
             element={
               <PrivateRoute>
                 <Orcamentos />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/clientes"
+            element={
+              <PrivateRoute>
+                <Clientes />
               </PrivateRoute>
             }
           />

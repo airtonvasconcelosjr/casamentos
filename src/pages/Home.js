@@ -42,32 +42,17 @@ function Home() {
     return (
         <div className="min-h-screen flex flex-col md:flex-row bg-green-50 p-6">
             {/* Parte esquerda */}
-            <div className="md:w-1/2 flex flex-col justify-center items-center text-center p-6">
-                {role !== "admin" && (
-                    <>
-                        <h1 className="text-3xl font-bold text-olive-dark mb-4">
-                            Olá, <span className="font-calligraphy text-6xl">{fullName}</span>
-                        </h1>
-                        <p className="text-lg text-gray-700 leading-relaxed">
-                            Que alegria ter você aqui! Este é o seu espaço exclusivo para acompanhar cada detalhe da organização
-                            do seu grande dia. <br /><br />
-                            Nosso time preparou tudo com carinho para tornar sua experiência mais leve, tranquila e especial.
-                            Aqui, você poderá visualizar orçamentos, tomar decisões importantes e garantir que tudo esteja perfeito
-                            para o momento mais inesquecível da sua vida. <br /><br />
-                            Sinta-se à vontade, o seu sonho começa agora!
-                        </p>
-                    </>
-                )}
-
+            <div className="md:w-1/2 flex flex-col justify-center items-center text-center p-10 md:p-6">
                 {role === "admin" && (
                     <h1 className="text-3xl font-bold text-olive-dark mb-4">
-                        Olá {fullName}, seja bem-vindo novamente!
+                        Olá {fullName}, seja bem-vindo(a) novamente!
                     </h1>
                 )}
             </div>
 
             {/* Parte direita */}
-            <div className="md:w-1/2 relative p-6 flex flex-col justify-center items-center gap-6 overflow-hidden rounded-lg shadow-lg">
+            <div className="relative w-full md:w-1/2 flex flex-col justify-center items-center gap-6 overflow-hidden rounded-lg shadow-lg p-6 h-[60vh] md:h-auto">
+
                 {/* Imagem de fundo */}
                 <img
                     src={backgroundImage}
@@ -80,10 +65,13 @@ function Home() {
                     {role === "admin" && (
                         <>
                             <Link to="/users" className="w-full max-w-md">
-                                <Card title="Usuários" description="Gerencie os usuários/clientes cadastrados." />
+                                <Card title="Usuários" description="Gerencie os usuários cadastrados." />
                             </Link>
                             <Link to="/orcamentos" className="w-full max-w-md">
                                 <Card title="Orçamentos" description="Visualize e edite os orçamentos." />
+                            </Link>
+                             <Link to="/clientes" className="w-full max-w-md">
+                                <Card title="Clientes" description="Gerencie/ cadastre clientes." />
                             </Link>
                         </>
                     )}
@@ -91,6 +79,7 @@ function Home() {
                     {role !== "admin" && (
                         <div className="w-full max-w-md">
                             <Card title="Orçamentos" description="Veja seus orçamentos disponíveis." />
+                            <Card title="Clientes" description="Gerencie/ cadastre clientes." />
                         </div>
                     )}
                 </div>
