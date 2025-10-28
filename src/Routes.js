@@ -9,6 +9,7 @@ import PublicLayout from "./layouts/PublicLayout";
 import Users from "./pages/UsersList";
 import Orcamentos from "./pages/OrcamentosList";
 import Clientes from "./pages/CustomersList";
+import NotFound from "./pages/404";
 
 function AppRoutes() {
   return (
@@ -55,7 +56,14 @@ function AppRoutes() {
           />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route
+          path="*"
+          element={
+            <PrivateRoute>
+              <NotFound />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   );
