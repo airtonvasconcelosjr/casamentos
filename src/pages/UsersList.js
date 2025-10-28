@@ -26,7 +26,7 @@ function UsersList() {
     const itemsPerPage = 5;
 
     // Verificar se o usuário logado é admin
-    const isAdmin = userLogged?.email === "airton.vasconcelosjr@gmail.com" || userLogged?.email === "ab@gmail.com";
+    const isAdmin = userLogged?.email === "airton.vasconcelosjr@gmail.com";
 
     const handleEditClick = (user) => {
         setSelectedUser(user);
